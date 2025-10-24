@@ -18,7 +18,7 @@ jobs:
         id: changed_files
         uses: tj-actions/changed-files@v44
         with:
-          files_glob: |
+          files_yaml: |
             frontend: frontend/**
             functions: functions/**
 
