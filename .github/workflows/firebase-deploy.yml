@@ -43,7 +43,9 @@ jobs:
             ${{ runner.os }}-functions-node-
       - name: (Functions) Install Dependencies
         working-directory: ./functions
-        run: npm install
+        run: |
+          npm install
+          npm run build
 
       # --- FIREBASE DEPLOY ---
       - name: Install Firebase CLI
