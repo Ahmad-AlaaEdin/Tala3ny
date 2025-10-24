@@ -1,0 +1,87 @@
+name: Build and Deploy to Firebase
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed_files
+        uses: tj-actions/changed-files@v44
+        with:
+          files_glob: |
+            frontend: frontend/**
+            functions: functions/**
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: (Frontend) Cache node_modules
+        if: steps.changed_files.outputs.frontend_changed == 'true'
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-frontend-node-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-frontend-node-
+
+      - name: (Frontend) Install Dependencies and Build
+        if: steps.changed_files.outputs.frontend_changed == 'true'
+        working-directory: ./frontend
+        run: |
+          npm install
+          npm run build
+
+      # --- FUNCTIONS DEPLOYMENT ---
+      # These steps only run if files in 'functions/' changed
+      # ----------------------------
+
+      - name: (Functions) Cache node_modules
+        if: steps.changed_files.outputs.functions_changed == 'true'
+        uses: actions/cache@v4
+        with:
+          path: functions/node_modules
+          key: ${{ runner.os }}-functions-node-${{ hashFiles('functions/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-functions-node-
+
+      - name: (Functions) Install Dependencies
+        if: steps.changed_files.outputs.functions_changed == 'true'
+        working-directory: ./functions
+        run: npm install
+
+      # --- FIREBASE DEPLOY ---
+      # These steps use the outputs from step 2 to run conditionally
+      # -----------------------
+
+      - name: Install Firebase CLI
+        # Only run this if *something* actually needs to be deployed
+        if: steps.changed_files.outputs.frontend_changed == 'true' || steps.changed_files.outputs.functions_changed == 'true'
+        run: npm install -g firebase-tools
+
+      - name: Deploy to Firebase Hosting
+        # Only runs if 'frontend/' files changed
+        if: steps.changed_files.outputs.frontend_changed == 'true'
+        run: |
+          firebase deploy --only hosting \
+                          --token "${{ secrets.FIREBASE_TOKEN }}" \
+                          --non-interactive
+
+      - name: Deploy to Firebase Functions
+        # Only runs if 'functions/' files changed
+        if: steps.changed_files.outputs.functions_changed == 'true'
+        run: |
+          firebase deploy --only functions \
+                          --token "${{ secrets.FIREBASE_TOKEN }}" \
+                          --non-interactive
