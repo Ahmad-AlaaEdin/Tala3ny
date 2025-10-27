@@ -5,6 +5,7 @@ import HomePage from "./pages/HomePage";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoutes";
 import ScanPage from "./pages/ScanPage";
+import ProfilePage from "./pages/ProfilePage";
 function App() {
   return (
     <AuthProvider>
@@ -17,6 +18,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ScanPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />
