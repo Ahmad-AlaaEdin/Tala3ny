@@ -3,9 +3,21 @@ import heroImage2 from "./../assets/image2.png";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleAuth } from "./../config/firebase";
 import { useNavigate } from "react-router";
+import InstallButton from "../components/InstallButton";
+import { useAuth } from "../context/AuthContext";
+import { useEffect } from "react";
 
 const HomePage = () => {
   const navigate = useNavigate();
+
+  const { user } = useAuth();
+  useEffect(() => {
+    if (user) {
+      console.log("hello");
+      navigate("/scan", { replace: true });
+    }
+  });
+
   const signInWithGoogle = async () => {
     try {
       await signInWithPopup(auth, googleAuth);
@@ -49,9 +61,7 @@ const HomePage = () => {
             </ul>
           </div>
 
-          <button className="mt-8 px-6 py-3 bg-[#007BFF] text-[#f5f7f8] font-semibold rounded-full shadow-md hover:bg-[#006ae6] transition">
-            جرّب التطبيق الآن
-          </button>
+          <InstallButton />
         </div>
 
         {/* Image */}
