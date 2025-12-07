@@ -1,41 +1,27 @@
 import { useState, useEffect } from "react";
 
 export function useNotificationPermission() {
-  const [permission, setPermission] = useState(Notification.permission);
+  const [permission, setPermission] = useState<NotificationPermission>(
+    Notification.permission
+  );
 
   useEffect(() => {
-    async function checkPermission() {
-      if (!("permissions" in navigator)) {
-        return;
-      }
+    // Update state initially
+    setPermission(Notification.permission);
 
-      try {
-        const status = await navigator.permissions.query({
-          name: "notifications",
+    // Try to listen for changes via Permissions API
+    if ("permissions" in navigator) {
+      navigator.permissions
+        .query({ name: "notifications" as PermissionName })
+        .then((status) => {
+          status.onchange = () => {
+            setPermission(Notification.permission);
+          };
+        })
+        .catch((error) => {
+          console.log("Permissions API not supported for notifications:", error);
         });
-
-        // Map 'prompt' from PermissionState to React state value "default"
-        function mapPermissionState(
-          state: PermissionState
-        ): "default" | "denied" | "granted" {
-          if (state === "prompt") return "default";
-          return state; // "granted" or "denied"
-        }
-
-        status.onchange = () => {
-          console.log(status);
-          setPermission(mapPermissionState(status.state));
-        };
-
-        setPermission(mapPermissionState(status.state));
-
-        setPermission(Notification.permission);
-      } catch (e) {
-        console.log(e);
-      }
     }
-
-    checkPermission();
   }, []);
 
   return permission;

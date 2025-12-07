@@ -1,4 +1,5 @@
-import { useNotificationPermission } from "../hooks/useNotificationPermission";
+import { useState, useEffect } from "react";
+
 import {
   messaging,
   getToken,
@@ -11,10 +12,19 @@ import {
 
 import NotifyOwner from "@/components/NotifyOwner";
 const ScanPage = () => {
-  const permission = useNotificationPermission();
+  // Initialize with current permission, but allow local updates
+  const [permission, setPermission] = useState<NotificationPermission>(
+    Notification.permission
+  );
+  const [loading, setLoading] = useState(false);
 
   async function registerToken() {
     try {
+      if (!("serviceWorker" in navigator)) {
+        console.log("Service Worker not supported");
+        return;
+      }
+
       // Wait for the service worker (PWA) to be ready
       const registration = await navigator.serviceWorker.ready;
       
@@ -26,7 +36,7 @@ const ScanPage = () => {
       });
 
       if (!token || !auth.currentUser) {
-        console.log("No FCM token available.");
+        console.log("No FCM token available or user not logged in.");
         return;
       }
 
@@ -58,54 +68,54 @@ const ScanPage = () => {
   }
 
   async function askForNotificationPermission() {
-    // 1. Check if the browser supports notifications
     if (!("Notification" in window)) {
       console.log("This browser does not support desktop notification");
       return;
     }
 
-    // 2. Check the current permission status
-    if (Notification.permission === "granted") {
-      console.log("Permission already granted!");
-      await registerToken();
-      return;
-    }
+    setLoading(true);
 
-    if (Notification.permission === "denied") {
-      console.log(
-        "Permission was permanently denied. User must change it in browser settings."
-      );
-      // Show a message guiding them to browser settings
-      return;
-    }
+    try {
+      // 1. Request permission
+      const result = await Notification.requestPermission();
+      
+      // 2. Update local state immediately
+      setPermission(result);
 
-    // 3. If permission is 'default' (not yet asked), then ask
-    if (Notification.permission === "default") {
-      try {
-        // This shows the browser's native prompt
-        const result = await Notification.requestPermission();
-        if (result === "granted") {
-          await registerToken();
-        } else if (result === "denied") {
-          console.log("Permission denied by user.");
-          // Don't bother them again
-        } else {
-          // result === 'default'
-          console.log("Permission request dismissed.");
-          // The user closed the box. You can ask again later.
-        }
-      } catch (error) {
-        console.error("Error asking for permission: ", error);
+      if (result === "granted") {
+        console.log("Permission granted!");
+        await registerToken();
+      } else if (result === "denied") {
+        console.log("Permission denied by user.");
+        alert("يرجى تفعيل الإشعارات من إعدادات المتصفح لتلقي التنبيهات.");
       }
+    } catch (error) {
+      console.error("Error asking for permission: ", error);
+    } finally {
+      setLoading(false);
     }
   }
+
+  // Check permission on mount (double check)
+  useEffect(() => {
+    setPermission(Notification.permission);
+  }, []);
 
   return (
     <>
       {permission !== "granted" && (
-        <button onClick={askForNotificationPermission} className="bg-amber-600">
-          Allow Notifications
-        </button>
+        <div className="p-4 text-center">
+          <button 
+            onClick={askForNotificationPermission} 
+            disabled={loading}
+            className={`bg-amber-600 text-white px-4 py-2 rounded-lg shadow-md transition-all ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-amber-700'}`}
+          >
+            {loading ? "جاري التفعيل..." : "تفعيل التنبيهات"}
+          </button>
+          <p className="text-xs text-gray-500 mt-2">
+            اضغط لتفعيل التنبيهات لتصلك رسائل عند الحاجة لتحريك سيارتك
+          </p>
+        </div>
       )}
       <NotifyOwner />
     </>
