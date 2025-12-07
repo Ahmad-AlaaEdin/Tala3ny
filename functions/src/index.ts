@@ -14,6 +14,7 @@ interface NotificationData {
 
 interface UserData {
   fcmToken?: string;
+  fcmTokens?: string[];
 }
 
 export const sendCarNotification = onDocumentCreated(
@@ -40,15 +41,22 @@ export const sendCarNotification = onDocumentCreated(
       }
 
       const userData = userDoc.data() as UserData;
-      const fcmToken = userData.fcmToken;
+      
+      // Support both single token (legacy) and multiple tokens
+      let tokens: string[] = [];
+      if (userData.fcmTokens && Array.isArray(userData.fcmTokens)) {
+        tokens = userData.fcmTokens;
+      } else if (userData.fcmToken) {
+        tokens = [userData.fcmToken];
+      }
 
-      if (!fcmToken) {
+      if (tokens.length === 0) {
         console.log("User has no device token saved.");
         return;
       }
 
-      const payload: admin.messaging.Message = {
-        token: fcmToken,
+      const payload: admin.messaging.MulticastMessage = {
+        tokens: tokens,
         notification: {
           title: "⚠️ تنبيه سيارة",
           body: `${message} - رقم اللوحة: ${plateNumber}`,
@@ -59,8 +67,22 @@ export const sendCarNotification = onDocumentCreated(
         },
       };
 
-      await admin.messaging().send(payload);
-      console.log("Notification sent successfully!");
+      const response = await admin.messaging().sendEachForMulticast(payload);
+      console.log(
+        `Notifications sent: ${response.successCount}, Failed: ${response.failureCount}`
+      );
+      
+      // Optional: Remove invalid tokens if needed
+      if (response.failureCount > 0) {
+        const failedTokens: string[] = [];
+        response.responses.forEach((resp, idx) => {
+          if (!resp.success) {
+            failedTokens.push(tokens[idx]);
+          }
+        });
+        console.log("Failed tokens:", failedTokens);
+      }
+
     } catch (error) {
       console.error("Error sending notification:", error);
     }
