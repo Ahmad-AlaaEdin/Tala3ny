@@ -14,16 +14,24 @@ export function useNotificationPermission() {
           name: "notifications",
         });
 
+        // Map 'prompt' from PermissionState to React state value "default"
+        function mapPermissionState(
+          state: PermissionState
+        ): "default" | "denied" | "granted" {
+          if (state === "prompt") return "default";
+          return state; // "granted" or "denied"
+        }
+
         status.onchange = () => {
           console.log(status);
-          setPermission(status.state);
+          setPermission(mapPermissionState(status.state));
         };
 
-        setPermission(status.state);
-      } catch (error) {
-        console.error("Error checking notification permission:", error);
+        setPermission(mapPermissionState(status.state));
 
         setPermission(Notification.permission);
+      } catch (e) {
+        console.log(e);
       }
     }
 

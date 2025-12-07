@@ -30,7 +30,7 @@ const HomePage = () => {
   return (
     <div dir="rtl" className="font-sans bg-[#f5f7f8] text-[#111418]">
       {/* Section 1 */}
-      <section className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 py-20 px-6 md:px-20 bg-gradient-to-br from-[#f5f7f8] to-white">
+      <section className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 py-20 px-6 md:px-20 bg-linear-to-br from-[#f5f7f8] to-white">
         {/* Text */}
         <div className="flex-1 space-y-5">
           <h1 className="text-3xl md:text-4xl font-extrabold leading-snug text-[#111418]">
@@ -75,7 +75,7 @@ const HomePage = () => {
       </section>
 
       {/* Section 2 */}
-      <section className="flex flex-col md:flex-row items-center justify-between gap-10 py-20 px-6 md:px-20 bg-gradient-to-br from-[#101922] to-[#1a2634] text-[#f5f7f8]">
+      <section className="flex flex-col md:flex-row items-center justify-between gap-10 py-20 px-6 md:px-20 bg-linear-to-br from-[#101922] to-[#1a2634] text-[#f5f7f8]">
         {/* Text */}
         <div className="flex-1 space-y-5">
           <h1 className="text-3xl md:text-4xl font-extrabold leading-snug text-[#f5f7f8]">

@@ -9,6 +9,7 @@ import {
   auth,
 } from "../config/firebase";
 
+import NotifyOwner from "@/components/NotifyOwner";
 const ScanPage = () => {
   const permission = useNotificationPermission();
 
@@ -95,9 +96,7 @@ const ScanPage = () => {
       }
     }
   }
-  const handleComplete = (plate: string) => {
-    console.log("Car plate entered:", plate); // e.g., "ABC123"
-  };
+
   return (
     <>
       {permission !== "granted" && (
@@ -105,9 +104,7 @@ const ScanPage = () => {
           Allow Notifications
         </button>
       )}
-      <div className="flex flex-col items-center justify-center h-screen gap-6">
-        <h2 className="text-lg font-semibold">Enter Car Plate</h2>
-      </div>
+      <NotifyOwner />
     </>
   );
 };

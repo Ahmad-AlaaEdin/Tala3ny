@@ -1,5 +1,9 @@
 const Logo = () => {
-  return <h1 className="font-bold text-2xl">طلّعني</h1>;
+  return (
+    <a href="/">
+      <h1 className="font-bold text-2xl">طلّعني</h1>
+    </a>
+  );
 };
 
 export default Logo;

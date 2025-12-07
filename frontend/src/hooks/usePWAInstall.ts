@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-// Custom event type for the 'beforeinstallprompt' event
+
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;

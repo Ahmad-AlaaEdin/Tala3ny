@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { auth, db, doc, getDoc } from "../config/firebase";
 import {
   User,
   Star,
@@ -10,6 +11,7 @@ import {
   Lock,
   LogOut,
 } from "lucide-react";
+import CarPlateForm from "@/components/CarPlateForm";
 
 // A reusable Switch Toggle component for the settings
 const SwitchToggle = ({
@@ -63,7 +65,17 @@ const ProfilePage = () => {
     // Deleting would call setCar(null)
     console.log("Car menu clicked");
   };
+  useEffect(() => {
+    async function fetchUserData() {
+      if (auth.currentUser) {
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        const userDoc = await getDoc(userRef);
+        console.log("User Data:", userDoc.data()?.fcmTokens);
+      }
+    }
 
+    fetchUserData();
+  }, []);
   return (
     // Page container to center the card
     <div className="flex min-h-screen w-full items-start justify-center bg-gray-100 p-4 pt-10 font-sans">
@@ -94,9 +106,7 @@ const ProfilePage = () => {
 
         {/* === Cars Section === */}
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-gray-800">
-            سياراتي المسجلة
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-800">سياراتي</h2>
 
           {/* Conditional logic based on "user can add one car" */}
           {car ? (
@@ -119,46 +129,8 @@ const ProfilePage = () => {
             </div>
           ) : (
             // If no car, show "Add Car" button
-            <button
-              onClick={handleAddCar}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-50 py-3 px-4 font-medium text-blue-600 transition-colors hover:bg-blue-100"
-            >
-              <Plus className="h-5 w-5" />
-              <span>إضافة سيارة</span>
-            </button>
+            <CarPlateForm />
           )}
-          {/* Note: The UI shows another car, but we follow the "one car" rule.
-              If you needed multiple cars, you would map over an array of cars here. */}
-        </section>
-
-        {/* === Settings Section === */}
-        <section className="mt-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-800">الإعدادات</h2>
-
-          {/* Setting 1: Parking Notifications */}
-          <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
-            <div className="flex items-center gap-4">
-              <div className="rounded-lg bg-blue-100 p-2">
-                <Bell className="h-6 w-6 text-blue-600" />
-              </div>
-              <span className="text-gray-700">استقبال إشعارات الركن</span>
-            </div>
-            <SwitchToggle
-              enabled={parkingNotifications}
-              onChange={setParkingNotifications}
-            />
-          </div>
-
-          {/* Setting 2: Hide Number */}
-          <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
-            <div className="flex items-center gap-4">
-              <div className="rounded-lg bg-yellow-100 p-2">
-                <Lock className="h-6 w-6 text-yellow-600" />
-              </div>
-              <span className="text-gray-700">إخفاء الرقم الشخصي</span>
-            </div>
-            <SwitchToggle enabled={hideNumber} onChange={setHideNumber} />
-          </div>
         </section>
 
         {/* === Logout Button === */}

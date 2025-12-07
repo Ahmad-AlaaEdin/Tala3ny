@@ -2,7 +2,7 @@ const CarForm = () => {
   const OnSubmit = async () => {};
   return (
     <div className="shadow rounded-lg p-4 m-4">
-      <form className="flex flex-col gap-3">
+      <form className="flex flex-col gap-3" onSubmit={OnSubmit}>
         <label htmlFor="plateNumber">
           <p>رقم العربية</p>
         </label>

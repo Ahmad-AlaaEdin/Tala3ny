@@ -1,27 +1,68 @@
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-admin.initializeApp();
-const db = admin.firestore();
+import {onDocumentCreated} from "firebase-functions/v2/firestore";
+import * as admin from "firebase-admin";
 
-exports.notifyByPlateNumber = functions.https.onCall(
-  async (plateNumber: string, context) => {
-    if (!plateNumber)
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "Missing required fields"
-      );
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
-    const userDoc = await db.collection("users").doc(plateNumber).get();
-    if (!userDoc.exists) return { success: false, message: "User not found" };
+// Define expected schema
+interface NotificationData {
+  toUserId: string;
+  plateNumber: string;
+  message: string;
+}
 
-    const userData = userDoc.data();
-    if (!userData.token)
-      return { success: false, message: "User has no notifications" };
-    const title = "";
-    const body = "";
-    await admin.messaging().sendToDevice(userData.token, {
-      notification: { title, body, icon: "/icons/icon-192.png" },
-    });
-    return { success: true };
+interface UserData {
+  fcmToken?: string;
+}
+
+export const sendCarNotification = onDocumentCreated(
+  "notifications/{notificationId}",
+  async (event) => {
+    const snapshot = event.data;
+    if (!snapshot) {
+      return;
+    }
+    const notificationData = snapshot.data() as NotificationData;
+
+    const {toUserId, plateNumber, message} = notificationData;
+
+    try {
+      const userDoc = await admin
+        .firestore()
+        .collection("users")
+        .doc(toUserId)
+        .get();
+
+      if (!userDoc.exists) {
+        console.log("No user found");
+        return;
+      }
+
+      const userData = userDoc.data() as UserData;
+      const fcmToken = userData.fcmToken;
+
+      if (!fcmToken) {
+        console.log("User has no device token saved.");
+        return;
+      }
+
+      const payload: admin.messaging.Message = {
+        token: fcmToken,
+        notification: {
+          title: "⚠️ تنبيه سيارة",
+          body: `${message} - رقم اللوحة: ${plateNumber}`,
+        },
+        data: {
+          type: "car_alert",
+          plateNumber,
+        },
+      };
+
+      await admin.messaging().send(payload);
+      console.log("Notification sent successfully!");
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
   }
 );
