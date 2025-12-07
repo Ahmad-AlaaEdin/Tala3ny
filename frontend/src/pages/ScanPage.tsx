@@ -15,10 +15,10 @@ const ScanPage = () => {
 
   async function registerToken() {
     try {
-      const registration = await navigator.serviceWorker.register(
-        "/firebase-messaging-sw.js"
-      );
-      // 1. Get FCM token
+      // Wait for the service worker (PWA) to be ready
+      const registration = await navigator.serviceWorker.ready;
+      
+      // 1. Get FCM token using the existing registration
       const token = await getToken(messaging, {
         vapidKey:
           "BH9P5AqfYpCWga7LfsWJKOsc7x6okn9SoEyAWfluyj4_pe5Uyi7HYZOmY_-MmGXzQc4A0HQxaE4tDZhWx-I9erY",
