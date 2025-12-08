@@ -109,7 +109,7 @@ const HomePage = () => {
             onClick={signInWithGoogle}
             className="mt-8 px-6 py-3 bg-[#FFC107] text-[#111418] font-semibold rounded-full shadow-md hover:bg-[#e6ad00] transition"
           >
-            حمّل التطبيق
+            تجربة التطبيق
           </button>
         </div>
 

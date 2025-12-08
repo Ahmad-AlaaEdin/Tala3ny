@@ -54,7 +54,7 @@ const ScanPage = () => {
 
       if (!tokens.includes(token)) {
         tokens.push(token);
-        
+
         await setDoc(
           userRef,
           { fcmTokens: tokens },
@@ -103,21 +103,19 @@ const ScanPage = () => {
 
   return (
     <>
+      
       {permission !== "granted" && (
-        <div className="p-4 text-center">
-          <button 
-            onClick={askForNotificationPermission} 
-            disabled={loading}
-            className={`bg-amber-600 text-white px-4 py-2 rounded-lg shadow-md transition-all ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-amber-700'}`}
+        <div className="w-full flex justify-center">
+          <button
+            onClick={askForNotificationPermission}
+            className="bg-amber-600 p-3 rounded-2xl m-2"
           >
-            {loading ? "جاري التفعيل..." : "تفعيل التنبيهات"}
+            تفعبل التنبيهات
           </button>
-          <p className="text-xs text-gray-500 mt-2">
-            اضغط لتفعيل التنبيهات لتصلك رسائل عند الحاجة لتحريك سيارتك
-          </p>
         </div>
       )}
       <NotifyOwner />
+    
     </>
   );
 };
