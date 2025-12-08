@@ -8,6 +8,7 @@ import {
   setDoc,
   db,
   auth,
+  VAPID_KEY,
 } from "../config/firebase";
 
 import NotifyOwner from "@/components/NotifyOwner";
@@ -30,8 +31,7 @@ const ScanPage = () => {
 
       // 1. Get FCM token using the existing registration
       const token = await getToken(messaging, {
-        vapidKey:
-          "BH9P5AqfYpCWga7LfsWJKOsc7x6okn9SoEyAWfluyj4_pe5Uyi7HYZOmY_-MmGXzQc4A0HQxaE4tDZhWx-I9erY",
+        vapidKey: VAPID_KEY,
         serviceWorkerRegistration: registration,
       });
 

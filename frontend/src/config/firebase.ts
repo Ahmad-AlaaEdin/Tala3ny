@@ -17,10 +17,11 @@ const firebaseConfig = {
   authDomain: "tala3ny-5e4d9.firebaseapp.com",
   projectId: "tala3ny-5e4d9",
   storageBucket: "tala3ny-5e4d9.firebasestorage.app",
-  messagingSenderId: "76162891753",
-  appId: "1:76162891753:web:e8038890d500db3530d578",
   measurementId: "G-XQ9KVES9WC",
 };
+
+export const VAPID_KEY =
+  "BH9P5AqfYpCWga7LfsWJKOsc7x6okn9SoEyAWfluyj4_pe5Uyi7HYZOmY_-MmGXzQc4A0HQxaE4tDZhWx-I9erY";
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
