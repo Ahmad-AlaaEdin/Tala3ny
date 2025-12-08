@@ -17,6 +17,8 @@ const firebaseConfig = {
   authDomain: "tala3ny-5e4d9.firebaseapp.com",
   projectId: "tala3ny-5e4d9",
   storageBucket: "tala3ny-5e4d9.firebasestorage.app",
+  messagingSenderId: "76162891753",
+  appId: "1:76162891753:web:e8038890d500db3530d578",
   measurementId: "G-XQ9KVES9WC",
 };
 
