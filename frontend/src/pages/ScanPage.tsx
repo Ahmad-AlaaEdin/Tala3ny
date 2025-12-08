@@ -44,7 +44,7 @@ const ScanPage = () => {
 
       if (!tokens.includes(token)) {
         tokens.push(token);
-        
+
         await setDoc(
           userRef,
           { fcmTokens: tokens },
@@ -103,9 +103,14 @@ const ScanPage = () => {
   return (
     <>
       {permission !== "granted" && (
-        <button onClick={askForNotificationPermission} className="bg-amber-600">
-          Allow Notifications
-        </button>
+        <div className="w-full flex justify-center">
+          <button
+            onClick={askForNotificationPermission}
+            className="bg-amber-600 p-3 rounded-2xl m-2"
+          >
+            تفعبل التنبيهات
+          </button>
+        </div>
       )}
       <NotifyOwner />
     </>
