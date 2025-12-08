@@ -27,7 +27,7 @@ const ScanPage = () => {
 
       // Wait for the service worker (PWA) to be ready
       const registration = await navigator.serviceWorker.ready;
-      
+
       // 1. Get FCM token using the existing registration
       const token = await getToken(messaging, {
         vapidKey:
@@ -78,7 +78,7 @@ const ScanPage = () => {
     try {
       // 1. Request permission
       const result = await Notification.requestPermission();
-      
+
       // 2. Update local state immediately
       setPermission(result);
 
@@ -103,19 +103,17 @@ const ScanPage = () => {
 
   return (
     <>
-      
       {permission !== "granted" && (
         <div className="w-full flex justify-center">
           <button
             onClick={askForNotificationPermission}
             className="bg-amber-600 p-3 rounded-2xl m-2"
           >
-            تفعبل التنبيهات
+            {loading ? "جاري التحميل" : "تفعبل التنبيهات"}{" "}
           </button>
         </div>
       )}
       <NotifyOwner />
-    
     </>
   );
 };
