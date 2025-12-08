@@ -29,7 +29,12 @@ export const VAPID_KEY =
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleAuth = new GoogleAuthProvider();
-const messaging = getMessaging(app);
+let messaging: any = null;
+try {
+  messaging = getMessaging(app);
+} catch (error) {
+  console.log("Firebase Messaging not supported:", error);
+}
 const db = getFirestore(app);
 export {
   messaging,

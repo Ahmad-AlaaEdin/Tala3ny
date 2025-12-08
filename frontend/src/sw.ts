@@ -25,15 +25,19 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
 
-onBackgroundMessage(messaging, (payload) => {
-  console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  const notificationTitle = payload.notification?.title || 'Background Message Title';
-  const notificationOptions = {
-    body: payload.notification?.body,
-    icon: '/icons/icon.png'
-  };
+try {
+  const messaging = getMessaging(app);
+  onBackgroundMessage(messaging, (payload) => {
+    console.log('[firebase-messaging-sw.js] Received background message ', payload);
+    const notificationTitle = payload.notification?.title || 'Background Message Title';
+    const notificationOptions = {
+      body: payload.notification?.body,
+      icon: '/icons/icon.png'
+    };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
+    self.registration.showNotification(notificationTitle, notificationOptions);
+  });
+} catch (error) {
+  console.log("Firebase Messaging not supported in SW:", error);
+}

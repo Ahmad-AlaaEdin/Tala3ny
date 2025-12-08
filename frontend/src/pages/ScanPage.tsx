@@ -21,8 +21,8 @@ const ScanPage = () => {
 
   async function registerToken() {
     try {
-      if (!("serviceWorker" in navigator)) {
-        console.log("Service Worker not supported");
+      if (!("serviceWorker" in navigator) || !messaging) {
+        console.log("Service Worker or Messaging not supported");
         return;
       }
 

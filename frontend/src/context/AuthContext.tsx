@@ -33,7 +33,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       if (
         !("serviceWorker" in navigator) ||
-        Notification.permission !== "granted"
+        Notification.permission !== "granted" ||
+        !messaging
       ) {
         return;
       }
