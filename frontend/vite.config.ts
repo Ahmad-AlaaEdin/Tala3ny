@@ -35,13 +35,13 @@ export default defineConfig({
         ],
         screenshots: [
           {
-            src: "/screenshots/desktop-wide.png",
+            src: "screenshots/desktop-wide.png",
             sizes: "1280x720",
             type: "image/png",
             form_factor: "wide",
           },
           {
-            src: "/screenshots/mobile-tall.png",
+            src: "screenshots/mobile-tall.png",
             sizes: "720x1280",
             type: "image/png",
             form_factor: "narrow",
