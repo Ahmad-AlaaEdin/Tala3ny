@@ -1,118 +1,114 @@
 import { useState, useEffect } from "react";
-
-import {
-  messaging,
-  getToken,
-  doc,
-  getDoc,
-  setDoc,
-  db,
-  auth,
-  VAPID_KEY,
-} from "../config/firebase";
-
+import { auth } from "../config/firebase";
+import { useFCMToken } from "../hooks/useFCMToken";
 import NotifyOwner from "@/components/NotifyOwner";
+
 const ScanPage = () => {
-  // Initialize with current permission, but allow local updates
   const [permission, setPermission] = useState<NotificationPermission>(
     Notification.permission
   );
   const [loading, setLoading] = useState(false);
 
-  async function registerToken() {
-    try {
-      if (!("serviceWorker" in navigator) || !messaging) {
-        console.log("Service Worker or Messaging not supported");
-        return;
-      }
-
-      // Wait for the service worker (PWA) to be ready
-      const registration = await navigator.serviceWorker.ready;
-
-      // 1. Get FCM token using the existing registration
-      const token = await getToken(messaging, {
-        vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: registration,
-      });
-
-      if (!token || !auth.currentUser) {
-        console.log("No FCM token available or user not logged in.");
-        return;
-      }
-
-      // 2. Reference to the user's Firestore doc
-      const userRef = doc(db, "users", auth.currentUser.uid);
-
-      // 3. Save/update the token (store as array if multiple devices)
-      const userDoc = await getDoc(userRef);
-
-      let tokens: string[] = [];
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        tokens = data.fcmTokens || [];
-      }
-
-      if (!tokens.includes(token)) {
-        tokens.push(token);
-
-        await setDoc(
-          userRef,
-          { fcmTokens: tokens },
-          { merge: true } // merge with existing data
-        );
-        console.log("FCM token saved successfully:", token);
-      }
-    } catch (error) {
-      console.error("Error saving FCM token:", error);
-    }
-  }
+  // Use the new FCM token hook
+  const { tokenRegistered, refreshToken } = useFCMToken(auth.currentUser);
 
   async function askForNotificationPermission() {
     if (!("Notification" in window)) {
-      console.log("This browser does not support desktop notification");
+      alert("متصفحك لا يدعم الإشعارات");
       return;
     }
 
     setLoading(true);
 
     try {
-      // 1. Request permission
+      // Request permission
       const result = await Notification.requestPermission();
 
-      // 2. Update local state immediately
+      // Update local state immediately
       setPermission(result);
 
       if (result === "granted") {
         console.log("Permission granted!");
-        await registerToken();
+        // Trigger token registration
+        await refreshToken();
       } else if (result === "denied") {
         console.log("Permission denied by user.");
         alert("يرجى تفعيل الإشعارات من إعدادات المتصفح لتلقي التنبيهات.");
       }
     } catch (error) {
       console.error("Error asking for permission: ", error);
+      alert("حدث خطأ أثناء طلب إذن الإشعارات");
     } finally {
       setLoading(false);
     }
   }
 
-  // Check permission on mount (double check)
+  // Check permission on mount and when page becomes visible
   useEffect(() => {
-    setPermission(Notification.permission);
-  }, []);
+    const updatePermission = () => {
+      const currentPermission = Notification.permission;
+      if (currentPermission !== permission) {
+        console.log("Permission changed:", currentPermission);
+        setPermission(currentPermission);
+
+        // If permission was granted externally, refresh token
+        if (currentPermission === "granted" && !tokenRegistered) {
+          refreshToken();
+        }
+      }
+    };
+
+    // Check immediately
+    updatePermission();
+
+    // Re-check when page becomes visible (user might have changed settings)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        updatePermission();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Also check periodically every 30 seconds
+    const interval = setInterval(updatePermission, 30000);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearInterval(interval);
+    };
+  }, [permission, tokenRegistered, refreshToken]);
 
   return (
     <>
       {permission !== "granted" && (
-        <div className="w-full flex justify-center">
+        <div className="w-full flex flex-col items-center gap-2 p-4 bg-amber-50 border-b border-amber-200">
+          <div className="text-center text-sm text-amber-800">
+            <p className="font-semibold mb-1">🔔 لتلقي التنبيهات</p>
+            <p className="text-xs">يجب تفعيل الإشعارات أولاً</p>
+          </div>
           <button
             onClick={askForNotificationPermission}
-            className="bg-amber-600 p-3 rounded-2xl m-2"
+            disabled={loading}
+            className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-6 py-2 rounded-2xl transition-colors"
           >
-            {loading ? "جاري التحميل" : "تفعبل التنبيهات"}{" "}
+            {loading ? "جاري التحميل..." : "تفعيل التنبيهات"}
           </button>
         </div>
       )}
+
+      {permission === "granted" && tokenRegistered && (
+        <div className="w-full p-2 bg-green-50 text-green-800 text-center text-sm border-b border-green-200">
+          ✓ التنبيهات مفعلة
+        </div>
+      )}
+
+      {permission === "granted" && !tokenRegistered && (
+        <div className="w-full p-2 bg-yellow-50 text-yellow-800 text-center text-sm border-b border-yellow-200">
+          ⏳ جاري تفعيل التنبيهات...
+        </div>
+      )}
+
       <NotifyOwner />
     </>
   );
